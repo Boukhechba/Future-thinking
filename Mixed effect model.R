@@ -14,7 +14,7 @@ writeresults <- function(x,path){
   print(paste0("Current working dir: ",path))
   sink(file=path) 
   print(summary(lme(posExpBiasScale ~ condition*session_int, random = ~1+session_int|participantId,control=ctrl, data=x, method="ML")))
-  print(summary(lme(negExpBiasScale ~ condition*session_int, random = ~session_int|participantId,control=ctrl, data=x, method="ML")))
+  print(summary(lme(negExpBiasScale ~ condition*session_int, random = ~1+session_int|participantId,control=ctrl, data=x, method="ML")))
   #Delete imputed data for non measured sessions
   y <- subset(x, session_int!=2 & session_int!=4)
   unique(y$session_int)
@@ -29,14 +29,14 @@ writeresults2 <- function(x,path){
   print(paste0("Current working dir: ",path))
   sink(file=path) 
   print(summary(lme(posExpBiasScale ~ session_int, random = ~1+session_int|participantId,control=ctrl, data=x, method="ML")))
-  print(summary(lme(negExpBiasScale ~ session_int, random = ~session_int|participantId,control=ctrl, data=x, method="ML")))
+  print(summary(lme(negExpBiasScale ~ session_int, random = ~1+session_int|participantId,control=ctrl, data=x, method="ML")))
   #Delete imputed data for non measured sessions
   y <- subset(x, session_int!=2 & session_int!=4)
   unique(y$session_int)
   print(summary(lme(depressionScale ~ session_int, random = ~1+session_int|participantId,control=ctrl, data=y, method="ML")))
   print(summary(lme(anxietyScale ~ session_int, random = ~1+session_int|participantId,control=ctrl, data=y, method="ML")))
   print(summary(lme(selfEffScale ~ session_int, random = ~1+session_int|participantId,control=ctrl, data=y, method="ML")))
-  print(summary(lme(growthMindScale ~ session_int, random = ~1|participantId,control=ctrl, data=y, method="ML")))
+  print(summary(lme(growthMindScale ~ session_int, random = ~1+session_int|participantId,control=ctrl, data=y, method="ML")))
   print(summary(lme(optimismScale ~ session_int, random = ~1+session_int|participantId,control=ctrl, data=y, method="ML")))
   sink()
 }
