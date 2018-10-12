@@ -162,15 +162,48 @@ writeresults2(c,'C://Users/mob3f/Documents/MindTrials Future Thinking/results/Lo
 ############################################################################################################
 ###Longitudunal analysis with 5 conditions
 
+
+
 x <- read.csv("C://Users/mob3f/Documents/MindTrials Future Thinking/Clean data from Jeremy/FTmainDataScales.csv")
 x <- preparedata(x)
-#Get a global view on our data
-summary(x)
-md.pattern(x)
 
 p<-read.csv("C://Users/mob3f/Documents/MindTrials Future Thinking/Clean data from Jeremy/FTmainAnalysisSamples.csv")
 ITT<-subset(p, ittSample==1)
 completers<-subset(p, txCompSample==1)
+ittx<-x[which(x$participantId %in% ITT$participantId), ]
+
+ag <- aggregate(posExpBiasScale~session+condition,data=ittx,FUN=function(x) c(n = length(x),mean=mean(x),sd=sd(x)))
+write.csv(do.call(data.frame,reshape(ag, idvar = "session", timevar = "condition", direction = "wide")), file="C://Users/mob3f/Documents/MindTrials Future Thinking/results/Stats/posExpBiasScale.csv")
+
+ag <- aggregate(negExpBiasScale~session+condition,data=ittx,FUN=function(x) c(n = length(x),mean=mean(x),sd=sd(x)))
+write.csv(do.call(data.frame,reshape(ag, idvar = "session", timevar = "condition", direction = "wide")), file="C://Users/mob3f/Documents/MindTrials Future Thinking/results/Stats/negExpBiasScale.csv")
+
+ag <- aggregate(depressionScale~session+condition,data=ittx,FUN=function(x) c(n = length(x),mean=mean(x),sd=sd(x)))
+write.csv(do.call(data.frame,reshape(ag, idvar = "session", timevar = "condition", direction = "wide")), file="C://Users/mob3f/Documents/MindTrials Future Thinking/results/Stats/depressionScale.csv")
+
+ag <- aggregate(anxietyScale~session+condition,data=ittx,FUN=function(x) c(n = length(x),mean=mean(x),sd=sd(x)))
+write.csv(do.call(data.frame,reshape(ag, idvar = "session", timevar = "condition", direction = "wide")), file="C://Users/mob3f/Documents/MindTrials Future Thinking/results/Stats/anxietyScale.csv")
+
+ag <- aggregate(selfEffScale~session+condition,data=ittx,FUN=function(x) c(n = length(x),mean=mean(x),sd=sd(x)))
+write.csv(do.call(data.frame,reshape(ag, idvar = "session", timevar = "condition", direction = "wide")), file="C://Users/mob3f/Documents/MindTrials Future Thinking/results/Stats/selfEffScale.csv")
+
+ag <- aggregate(growthMindScale~session+condition,data=ittx,FUN=function(x) c(n = length(x),mean=mean(x),sd=sd(x)))
+write.csv(do.call(data.frame,reshape(ag, idvar = "session", timevar = "condition", direction = "wide")), file="C://Users/mob3f/Documents/MindTrials Future Thinking/results/Stats/growthMindScale.csv")
+
+ag <- aggregate(optimismScale~session+condition,data=ittx,FUN=function(x) c(n = length(x),mean=mean(x),sd=sd(x)))
+write.csv(do.call(data.frame,reshape(ag, idvar = "session", timevar = "condition", direction = "wide")), file="C://Users/mob3f/Documents/MindTrials Future Thinking/results/Stats/optimismScale.csv")
+
+
+
+
+
+
+
+#Get a global view on our data
+summary(x)
+md.pattern(x)
+
+
 
 #Multiple imputation  for multilevel data Using the pan package
 fml <- posExpBiasScale + negExpBiasScale + depressionScale + anxietyScale + selfEffScale + growthMindScale + optimismScale  ~ condition + session_int + condition*session_int + (1+session_int|participantId)
@@ -191,6 +224,9 @@ writeresults(z,'C://Users/mob3f/Documents/MindTrials Future Thinking/results/Lon
 z$condition <- factor(z$condition, levels=c("POSITIVE","POSITIVE_NEGATION","NEUTRAL","FIFTY_FIFTY_RANDOM","FIFTY_FIFTY_BLOCKED"))
 writeresults(z,'C://Users/mob3f/Documents/MindTrials Future Thinking/results/Longitudinal Outcome/Treatment phase/ITT/4conditions_vs_Positive.txt')
 
+z$condition <- factor(z$condition, levels=c("NEUTRAL","POSITIVE","POSITIVE_NEGATION","FIFTY_FIFTY_RANDOM","FIFTY_FIFTY_BLOCKED"))
+writeresults(z,'C://Users/mob3f/Documents/MindTrials Future Thinking/results/Longitudinal Outcome/Treatment phase/ITT/4conditions_vs_NEUTRAL.txt')
+
 c <- subset(z, condition=="POSITIVE_NEGATION")
 writeresults2(c,'C://Users/mob3f/Documents/MindTrials Future Thinking/results/Longitudinal Outcome/Treatment phase/ITT/POSITIVE_NEGATION.txt')
 
@@ -209,8 +245,16 @@ y <- subset(ittx, session_int==5 |session_int==6)
 y$condition <- factor(y$condition, levels=c("FIFTY_FIFTY_RANDOM","FIFTY_FIFTY_BLOCKED","POSITIVE_NEGATION","POSITIVE","NEUTRAL"))
 writeresults(y,'C://Users/mob3f/Documents/MindTrials Future Thinking/results/Longitudinal Outcome/Follow-up phase/ITT/4conditions_vs_50_50Random.txt')
 
+c <- subset(y, condition=="FIFTY_FIFTY_BLOCKED"|condition=="FIFTY_FIFTY_RANDOM")
+c$condition <- factor(y$condition, levels=c("FIFTY_FIFTY_BLOCKED","FIFTY_FIFTY_RANDOM"))
+writeresults(c,'C://Users/mob3f/Documents/MindTrials Future Thinking/results/Longitudinal Outcome/Follow-up phase/ITT/50_50_blocked_vs_50_50Random.txt')
+
 y$condition <- factor(y$condition, levels=c("POSITIVE","POSITIVE_NEGATION","NEUTRAL","FIFTY_FIFTY_RANDOM","FIFTY_FIFTY_BLOCKED"))
 writeresults(y,'C://Users/mob3f/Documents/MindTrials Future Thinking/results/Longitudinal Outcome/Follow-up phase/ITT/4conditions_vs_Positive.txt')
+
+
+y$condition <- factor(y$condition, levels=c("NEUTRAL","POSITIVE","POSITIVE_NEGATION","FIFTY_FIFTY_RANDOM","FIFTY_FIFTY_BLOCKED"))
+writeresults(y,'C://Users/mob3f/Documents/MindTrials Future Thinking/results/Longitudinal Outcome/Follow-up phase/ITT/4conditions_vs_NEUTRAL.txt')
 
 c <- subset(y, condition=="POSITIVE_NEGATION")
 writeresults2(c,'C://Users/mob3f/Documents/MindTrials Future Thinking/results/Longitudinal Outcome/Follow-up phase/ITT/POSITIVE_NEGATION.txt')
