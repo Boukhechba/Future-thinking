@@ -13,7 +13,7 @@ library(ggplot2)
 writeresults <- function(x,path){
   print(paste0("Current working dir: ",path))
   sink(file=path) 
-  print(summary(lme(posExpBiasScale ~ condition*session_int, random = ~1+session_int|participantId,control=ctrl, data=x, method="ML")))
+  print(summary(lme(posExpBiasScale ~ condition, random = ~1+session_int|participantId,control=ctrl, data=z, method="ML")))
   print(summary(lme(negExpBiasScale ~ condition*session_int, random = ~1+session_int|participantId,control=ctrl, data=x, method="ML")))
   #Delete imputed data for non measured sessions
   y <- subset(x, session_int!=2 & session_int!=4)
@@ -81,6 +81,8 @@ impx <- mitmlComplete(imp, 1)
 #This si to summurize and plot the results of the imputation procedure
 #summary(imp)
 #plot(imp, trace="all", print="beta", pos=c(1,2))
+
+
 
 #ITT
 ittx<-impx[which(impx$participantId %in% ITT$participantId), ]
@@ -195,7 +197,17 @@ write.csv(do.call(data.frame,reshape(ag, idvar = "session", timevar = "condition
 
 
 
-
+##
+x$changepos<-x$posExpBiasScale-x$negExpBiasScale
+base<-x[which(x$session_int==1),]
+names(base)[names(base)=="changepos"] <- "changeposbase"
+base<-base[,c("participantId", "changeposbase"),drop=FALSE]
+other<-x[which(x$session_int>1),]
+new<-merge(other,base)
+new$ratio<-(new$changepos-new$changeposbase)/(new$changeposbase+8)
+new<-new[which(!is.na(new$changepos)),]
+atrisk<-new[which(new$ratio< -0.5 ),]
+##
 
 
 
@@ -209,16 +221,52 @@ md.pattern(x)
 fml <- posExpBiasScale + negExpBiasScale + depressionScale + anxietyScale + selfEffScale + growthMindScale + optimismScale  ~ condition + session_int + condition*session_int + (1+session_int|participantId)
 imp <- panImpute(x, formula=fml, n.burn=5000, n.iter=100, m=100)
 impx <- mitmlComplete(imp, 1)
+
+impx$changepos<-impx$posExpBiasScale-x$negExpBiasScale
+base<-impx[which(impx$session_int==1),]
+names(base)[names(base)=="changepos"] <- "changeposbase"
+base<-base[,c("participantId", "changeposbase"),drop=FALSE]
+other<-impx[which(impx$session_int>1),]
+new<-merge(other,base)
+new$ratio<-(new$changepos-new$changeposbase)/(new$changeposbase+8)
+new<-new[which(!is.na(new$changepos)),]
+atrisk<-new[which(new$ratio< -0.5 ),]
 #This si to summurize and plot the results of the imputation procedure
 #summary(imp)
 #plot(imp, trace="all", print="beta", pos=c(1,2))
 
+#specifying contrast
+C1 <- c(-180/961,814/961,-146/961,-173/961,-315/961)
+C2 <- c(-180/961,-147/961,815/961,-173/961,-315/961)
+C3 <- c(-180/961,-147/961,-146/961,788/961,-315/961)
+C4 <- c(-180/961,-147/961,-146/961,-173/961,646/961)
+contrs <- cbind(C1,C2,C3,C4)
+
+C1 <- c(-1/5,4/5,-1/5,-1/5,-1/5)
+C2 <- c(-1/5,-1/5,4/5,-1/5,-1/5)
+C3 <- c(-1/5,-1/5,-1/5,4/5,-1/5)
+C4 <- c(-1/5,-1/5,-1/5,-1/5,4/5)
+contrs2 <- cbind(C1,C2,C3,C4)
+
+participantId
+a<-do.call(data.frame,aggregate(posExpBiasScale~condition,data=z[which(z$session_int==0),],FUN=function(x) c(n = length(x),mean=mean(x),sd=sd(x))))
+mean(z[which(z$session_int==0),"posExpBiasScale"])
+do.call(data.frame,aggregate(posExpBiasScale.mean~condition,data=a,FUN=function(x) c(n = length(x)/5,mean=mean(x),sd=sd(x))))
 #ITT
 ittx<-impx[which(impx$participantId %in% ITT$participantId), ]
+mean(z$posExpBiasScale)
 # Treament phase
 z <- subset(ittx, session_int!=6)
 
-z$condition <- factor(z$condition, levels=c("FIFTY_FIFTY_RANDOM","FIFTY_FIFTY_BLOCKED","POSITIVE_NEGATION","POSITIVE","NEUTRAL"))
+mean<-(3.443493*(146/961)+3.244220*(173/961)+3.269841*(315/961)+3.425000*(180/961)+3.335034*(147/961))
+mean<-(3.443493+3.244220+3.269841+3.425000+3.335034)/5
+print(summary(lme(posExpBiasScale ~ condition*session_int, random = ~1+session_int|participantId,control=ctrl, data=z, method="ML")))
+z$session_int <-z$session_int-1
+unique(z$session_int)
+z$condition <- factor(z$condition, levels=c("POSITIVE","POSITIVE_NEGATION","FIFTY_FIFTY_BLOCKED","FIFTY_FIFTY_RANDOM","NEUTRAL"))
+contrasts(z$condition) <-contrs
+contrasts(z$condition) <-contrs2
+
 writeresults(z,'C://Users/mob3f/Documents/MindTrials Future Thinking/results/Longitudinal Outcome/Treatment phase/ITT/4conditions_vs_50_50Random.txt')
 
 z$condition <- factor(z$condition, levels=c("POSITIVE","POSITIVE_NEGATION","NEUTRAL","FIFTY_FIFTY_RANDOM","FIFTY_FIFTY_BLOCKED"))
