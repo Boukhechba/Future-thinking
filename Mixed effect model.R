@@ -10,34 +10,42 @@ library(mediation)
 library(lme4)
 library(ggplot2)
 
-writeresults <- function(x,path){
+writeresults <- function(x,path,type){
   print(paste0("Current working dir: ",path))
   sink(file=path) 
-  print(summary(lme(posExpBiasScale ~ condition*session_int, random = ~1+session_int|participantId,control=ctrl, data=z, method="ML")))
+  print(summary(lme(posExpBiasScale ~ condition*session_int, random = ~1+session_int|participantId,control=ctrl, data=x, method="ML")))
   print(summary(lme(negExpBiasScale ~ condition*session_int, random = ~1+session_int|participantId,control=ctrl, data=x, method="ML")))
-  #Delete imputed data for non measured sessions
-  y <- subset(x, session_int!=1 & session_int!=3)
-  unique(y$session_int)
-  print(summary(lme(depressionScale ~ condition*session_int, random = ~1+session_int|participantId,control=ctrl, data=y, method="ML")))
-  print(summary(lme(anxietyScale ~ condition*session_int, random = ~1+session_int|participantId,control=ctrl, data=y, method="ML")))
-  print(summary(lme(selfEffScale ~ condition*session_int, random = ~1+session_int|participantId,control=ctrl, data=y, method="ML")))
-  print(summary(lme(growthMindScale ~ condition*session_int, random = ~1+session_int|participantId,control=ctrl, data=y, method="ML")))
-  print(summary(lme(optimismScale ~ condition*session_int, random = ~1+session_int|participantId,control=ctrl, data=y, method="ML")))
+  #Delete imputed data for non measured sessions only for treatment
+  if (type=='treatment'){
+    x <- subset(x, session_int!=1 & session_int!=3)
+  }else{
+    x$session_int <- x$session_int-4
+  }
+
+  print(summary(lme(depressionScale ~ condition*session_int, random = ~1+session_int|participantId,control=ctrl, data=x, method="ML")))
+  print(summary(lme(anxietyScale ~ condition*session_int, random = ~1+session_int|participantId,control=ctrl, data=x, method="ML")))
+  print(summary(lme(selfEffScale ~ condition*session_int, random = ~1+session_int|participantId,control=ctrl, data=x, method="ML")))
+  print(summary(lme(growthMindScale ~ condition*session_int, random = ~1+session_int|participantId,control=ctrl, data=x, method="ML")))
+  print(summary(lme(optimismScale ~ condition*session_int, random = ~1+session_int|participantId,control=ctrl, data=x, method="ML")))
   sink()
 }
-writeresults2 <- function(x,path){
+writeresults2 <- function(x,path,type){
   print(paste0("Current working dir: ",path))
   sink(file=path) 
   print(summary(lme(posExpBiasScale ~ session_int, random = ~1+session_int|participantId,control=ctrl, data=x, method="ML")))
   print(summary(lme(negExpBiasScale ~ session_int, random = ~1+session_int|participantId,control=ctrl, data=x, method="ML")))
-  #Delete imputed data for non measured sessions
-  y <- subset(x, session_int!=1 & session_int!=3)
-  unique(y$session_int)
-  print(summary(lme(depressionScale ~ session_int, random = ~1+session_int|participantId,control=ctrl, data=y, method="ML")))
-  print(summary(lme(anxietyScale ~ session_int, random = ~1+session_int|participantId,control=ctrl, data=y, method="ML")))
-  print(summary(lme(selfEffScale ~ session_int, random = ~1+session_int|participantId,control=ctrl, data=y, method="ML")))
-  print(summary(lme(growthMindScale ~ session_int, random = ~1+session_int|participantId,control=ctrl, data=y, method="ML")))
-  print(summary(lme(optimismScale ~ session_int, random = ~1+session_int|participantId,control=ctrl, data=y, method="ML")))
+  #Delete imputed data for non measured sessions only for treatment
+  if (type=='treatment'){
+    x <- subset(x, session_int!=1 & session_int!=3)
+  }else{
+    x$session_int <- x$session_int-4
+  }
+
+  print(summary(lme(depressionScale ~ session_int, random = ~1+session_int|participantId,control=ctrl, data=x, method="ML")))
+  print(summary(lme(anxietyScale ~ session_int, random = ~1+session_int|participantId,control=ctrl, data=x, method="ML")))
+  print(summary(lme(selfEffScale ~ session_int, random = ~1+session_int|participantId,control=ctrl, data=x, method="ML")))
+  print(summary(lme(growthMindScale ~ session_int, random = ~1+session_int|participantId,control=ctrl, data=x, method="ML")))
+  print(summary(lme(optimismScale ~ session_int, random = ~1+session_int|participantId,control=ctrl, data=x, method="ML")))
   sink()
 }
 preparedata<-function(x){
@@ -56,6 +64,8 @@ preparedata<-function(x){
   x[is.nan(x)] <- NA
   return(x)
 }
+
+unique(x$session_int)
 ############################################################################################################
 ############################################################################################################
 ###Longitudunal analysis with 3 conditions
@@ -91,36 +101,36 @@ ittx<-impx[which(impx$participantId %in% ITT$participantId), ]
 z <- subset(ittx, session_int!=5)
 
 z$condition <- factor(z$condition, levels=c( "NEUTRAL","FIFTYFIFTY","POSITIVE"))
-writeresults(z,'C://Users/mob3f/Documents/MindTrials Future Thinking/results/Longitudinal Outcome/Treatment phase/ITT/2conditions_vs_Neutral.txt')
+writeresults(z,'C://Users/mob3f/Documents/MindTrials Future Thinking/results/Longitudinal Outcome/Treatment phase/ITT/2conditions_vs_Neutral.txt','treatment')
 
 z$condition <- factor(z$condition, levels=c( "FIFTYFIFTY","POSITIVE","NEUTRAL"))
-writeresults(z,'C://Users/mob3f/Documents/MindTrials Future Thinking/results/Longitudinal Outcome/Treatment phase/ITT/2conditions_vs_50_50.txt')
+writeresults(z,'C://Users/mob3f/Documents/MindTrials Future Thinking/results/Longitudinal Outcome/Treatment phase/ITT/2conditions_vs_50_50.txt','treatment')
 
 c <- subset(z, condition=="NEUTRAL")
-writeresults2(c,'C://Users/mob3f/Documents/MindTrials Future Thinking/results/Longitudinal Outcome/Treatment phase/ITT/Neutral.txt')
+writeresults2(c,'C://Users/mob3f/Documents/MindTrials Future Thinking/results/Longitudinal Outcome/Treatment phase/ITT/Neutral.txt','treatment')
 
 c <- subset(z, condition=="FIFTYFIFTY")
-writeresults2(c,'C://Users/mob3f/Documents/MindTrials Future Thinking/results/Longitudinal Outcome/Treatment phase/ITT/FIFTYFIFTY.txt')
+writeresults2(c,'C://Users/mob3f/Documents/MindTrials Future Thinking/results/Longitudinal Outcome/Treatment phase/ITT/FIFTYFIFTY.txt','treatment')
 
 c <- subset(z, condition=="POSITIVE")
-writeresults2(c,'C://Users/mob3f/Documents/MindTrials Future Thinking/results/Longitudinal Outcome/Treatment phase/ITT/POSITIVE.txt')
+writeresults2(c,'C://Users/mob3f/Documents/MindTrials Future Thinking/results/Longitudinal Outcome/Treatment phase/ITT/POSITIVE.txt','treatment')
 
 # Follow-up phase
 y <- subset(ittx, session_int==4 |session_int==5)
 y$condition <- factor(y$condition, levels=c( "NEUTRAL","FIFTYFIFTY","POSITIVE"))
-writeresults(y,'C://Users/mob3f/Documents/MindTrials Future Thinking/results/Longitudinal Outcome/Follow-up phase/ITT/2conditions_vs_Neutral.txt')
+writeresults(y,'C://Users/mob3f/Documents/MindTrials Future Thinking/results/Longitudinal Outcome/Follow-up phase/ITT/2conditions_vs_Neutral.txt','follow-up')
 
 y$condition <- factor(y$condition, levels=c( "FIFTYFIFTY","POSITIVE","NEUTRAL"))
-writeresults(y,'C://Users/mob3f/Documents/MindTrials Future Thinking/results/Longitudinal Outcome/Follow-up phase/ITT/2conditions_vs_50_50.txt')
+writeresults(y,'C://Users/mob3f/Documents/MindTrials Future Thinking/results/Longitudinal Outcome/Follow-up phase/ITT/2conditions_vs_50_50.txt','follow-up')
 
 c <- subset(y, condition=="NEUTRAL")
-writeresults2(c,'C://Users/mob3f/Documents/MindTrials Future Thinking/results/Longitudinal Outcome/Follow-up phase/ITT/Neutral.txt')
+writeresults2(c,'C://Users/mob3f/Documents/MindTrials Future Thinking/results/Longitudinal Outcome/Follow-up phase/ITT/Neutral.txt','follow-up')
 
 c <- subset(y, condition=="FIFTYFIFTY")
-writeresults2(c,'C://Users/mob3f/Documents/MindTrials Future Thinking/results/Longitudinal Outcome/Follow-up phase/ITT/FIFTYFIFTY.txt')
+writeresults2(c,'C://Users/mob3f/Documents/MindTrials Future Thinking/results/Longitudinal Outcome/Follow-up phase/ITT/FIFTYFIFTY.txt','follow-up')
 
 c <- subset(y, condition=="POSITIVE")
-writeresults2(c,'C://Users/mob3f/Documents/MindTrials Future Thinking/results/Longitudinal Outcome/Follow-up phase/ITT/POSITIVE.txt')
+writeresults2(c,'C://Users/mob3f/Documents/MindTrials Future Thinking/results/Longitudinal Outcome/Follow-up phase/ITT/POSITIVE.txt','follow-up')
 
 #Completers
 compx<-impx[which(impx$participantId %in% completers$participantId), ]
@@ -129,36 +139,36 @@ compx<-impx[which(impx$participantId %in% completers$participantId), ]
 z <- subset(compx, session_int!=5)
 
 z$condition <- factor(z$condition, levels=c( "NEUTRAL","FIFTYFIFTY","POSITIVE"))
-writeresults(z,'C://Users/mob3f/Documents/MindTrials Future Thinking/results/Longitudinal Outcome/Treatment phase/Completers/2conditions_vs_Neutral.txt')
+writeresults(z,'C://Users/mob3f/Documents/MindTrials Future Thinking/results/Longitudinal Outcome/Treatment phase/Completers/2conditions_vs_Neutral.txt','treatment')
 
 z$condition <- factor(z$condition, levels=c( "FIFTYFIFTY","POSITIVE","NEUTRAL"))
-writeresults(z,'C://Users/mob3f/Documents/MindTrials Future Thinking/results/Longitudinal Outcome/Treatment phase/Completers/2conditions_vs_50_50.txt')
+writeresults(z,'C://Users/mob3f/Documents/MindTrials Future Thinking/results/Longitudinal Outcome/Treatment phase/Completers/2conditions_vs_50_50.txt','treatment')
 
 c <- subset(z, condition=="NEUTRAL")
-writeresults2(c,'C://Users/mob3f/Documents/MindTrials Future Thinking/results/Longitudinal Outcome/Treatment phase/Completers/Neutral.txt')
+writeresults2(c,'C://Users/mob3f/Documents/MindTrials Future Thinking/results/Longitudinal Outcome/Treatment phase/Completers/Neutral.txt','treatment')
 
 c <- subset(z, condition=="FIFTYFIFTY")
-writeresults2(c,'C://Users/mob3f/Documents/MindTrials Future Thinking/results/Longitudinal Outcome/Treatment phase/Completers/FIFTYFIFTY.txt')
+writeresults2(c,'C://Users/mob3f/Documents/MindTrials Future Thinking/results/Longitudinal Outcome/Treatment phase/Completers/FIFTYFIFTY.txt','treatment')
 
 c <- subset(z, condition=="POSITIVE")
-writeresults2(c,'C://Users/mob3f/Documents/MindTrials Future Thinking/results/Longitudinal Outcome/Treatment phase/Completers/POSITIVE.txt')
+writeresults2(c,'C://Users/mob3f/Documents/MindTrials Future Thinking/results/Longitudinal Outcome/Treatment phase/Completers/POSITIVE.txt','treatment')
 
 # Follow-up phase
 y <- subset(compx, session_int==4 |session_int==5)
 y$condition <- factor(y$condition, levels=c( "NEUTRAL","FIFTYFIFTY","POSITIVE"))
-writeresults(y,'C://Users/mob3f/Documents/MindTrials Future Thinking/results/Longitudinal Outcome/Follow-up phase/Completers/2conditions_vs_Neutral.txt')
+writeresults(y,'C://Users/mob3f/Documents/MindTrials Future Thinking/results/Longitudinal Outcome/Follow-up phase/Completers/2conditions_vs_Neutral.txt','follow-up')
 
 y$condition <- factor(y$condition, levels=c( "FIFTYFIFTY","POSITIVE","NEUTRAL"))
-writeresults(y,'C://Users/mob3f/Documents/MindTrials Future Thinking/results/Longitudinal Outcome/Follow-up phase/Completers/2conditions_vs_50_50.txt')
+writeresults(y,'C://Users/mob3f/Documents/MindTrials Future Thinking/results/Longitudinal Outcome/Follow-up phase/Completers/2conditions_vs_50_50.txt','follow-up')
 
 c <- subset(y, condition=="NEUTRAL")
-writeresults2(c,'C://Users/mob3f/Documents/MindTrials Future Thinking/results/Longitudinal Outcome/Follow-up phase/Completers/Neutral.txt')
+writeresults2(c,'C://Users/mob3f/Documents/MindTrials Future Thinking/results/Longitudinal Outcome/Follow-up phase/Completers/Neutral.txt','follow-up')
 
 c <- subset(y, condition=="FIFTYFIFTY")
-writeresults2(c,'C://Users/mob3f/Documents/MindTrials Future Thinking/results/Longitudinal Outcome/Follow-up phase/Completers/FIFTYFIFTY.txt')
+writeresults2(c,'C://Users/mob3f/Documents/MindTrials Future Thinking/results/Longitudinal Outcome/Follow-up phase/Completers/FIFTYFIFTY.txt','follow-up')
 
 c <- subset(y, condition=="POSITIVE")
-writeresults2(c,'C://Users/mob3f/Documents/MindTrials Future Thinking/results/Longitudinal Outcome/Follow-up phase/Completers/POSITIVE.txt')
+writeresults2(c,'C://Users/mob3f/Documents/MindTrials Future Thinking/results/Longitudinal Outcome/Follow-up phase/Completers/POSITIVE.txt','follow-up')
 
 
 ############################################################################################################
@@ -197,7 +207,6 @@ ag <- aggregate(optimismScale~session+condition,data=ittx,FUN=function(x) c(n = 
 write.csv(do.call(data.frame,reshape(ag, idvar = "session", timevar = "condition", direction = "wide")), file="C://Users/mob3f/Documents/MindTrials Future Thinking/results/Stats/optimismScale.csv")
 
 
-
 ##
 x$changepos<-x$posExpBiasScale-x$negExpBiasScale
 base<-x[which(x$session_int==1),]
@@ -232,46 +241,6 @@ new<-merge(other,base)
 new$ratio<-(new$changepos-new$changeposbase)/(new$changeposbase+8)
 new<-new[which(!is.na(new$changepos)),]
 atrisk<-new[which(new$ratio< -0.5 ),]
-#This si to summurize and plot the results of the imputation procedure
-#summary(imp)
-#plot(imp, trace="all", print="beta", pos=c(1,2))
-
-# #specifying contrast
-# C1 <- c(-180/961,814/961,-146/961,-173/961,-315/961)
-# C2 <- c(-180/961,-147/961,815/961,-173/961,-315/961)
-# C3 <- c(-180/961,-147/961,-146/961,788/961,-315/961)
-# C4 <- c(-180/961,-147/961,-146/961,-173/961,646/961)
-# contrs <- cbind(C1,C2,C3,C4)
-# 
-# C0 <- c(1/5,1/5,1/5,1/5,1/5)
-# pos_half <- c(-1/2,-1/2,1/2,1/2,0)
-# ran_bloc <- c(0,0,-1/2,1/2,0)
-# pp_npp <- c(-1/2,1/2,0,0,0)
-# pos_neut <- c(1/2,1/2,0,0,-1)
-# half_neut <- c(0,0,1/2,1/2,-1)
-# contrs2 <- cbind(pos_half,ran_bloc,pp_npp,pos_neut,half_neut)
-# 
-# 
-# pos_neut <- c((180+147)/(180+147+315),(180+147)/(180+147+315),0,0,-315/(180+147+315))
-# pos_half <- c((180+147)/(180+147+146+173),(180+147)/(180+147+146+173),-(146+173)/(180+147+146+173),-(146+173)/(180+147+146+173),0)
-# half_neut <- c(0,0,(146+173)/(146+173+315),(146+173)/(146+173+315),-315/(146+173+315))
-# bloc_ran <- c(0,0,146/(146+173),-173/(146+173),0)
-# pp_npp <- c(180/(180+147),-147/(180+147),0,0,0)
-# contrs5 <- cbind(pos_neut,pos_half,half_neut,half_neut,half_neut)
-# contrs6 <- cbind(bloc_ran,pp_npp )
-# 
-# C1 <- c(-1/5,-1/5,4/5,-1/5,-1/5)
-# C2 <- c(-1/5,-1/5,-1/5,4/5,-1/5)
-# C3 <- c(-1/5,-1/5,-1/5,-1/5,4/5)
-# C4 <- c(4/5,-1/5,-1/5,-1/5,-1/5)
-# contrs3 <- cbind(C1,C2,C3,C4)
-
-#contrasts(z$condition) <-contrs5
-
-# a<-do.call(data.frame,aggregate(posExpBiasScale~condition,data=z[which(z$session_int==0),],FUN=function(x) c(n = length(x),mean=mean(x),sd=sd(x))))
-# do.call(data.frame,aggregate(posExpBiasScale~condition,data=z,FUN=function(x) c(n = length(x),mean=mean(x),sd=sd(x))))
-# mean(z[which(z$session_int==0),"posExpBiasScale"])
-# do.call(data.frame,aggregate(posExpBiasScale.mean~condition,data=a,FUN=function(x) c(n = length(x)/5,mean=mean(x),sd=sd(x))))
 
 
 #ITT
@@ -280,52 +249,52 @@ ittx<-impx[which(impx$participantId %in% ITT$participantId), ]
 z <- subset(ittx, session_int!=5)
 
 
-z$condition <- factor(z$condition, levels=c("FIFTY_FIFTY_BLOCKED","FIFTY_FIFTY_RANDOM","NEUTRAL","POSITIVE_NEGATION","POSITIVE"))
-writeresults(z,'C://Users/mob3f/Documents/MindTrials Future Thinking/results/Longitudinal Outcome/Treatment phase/ITT/4conditions_vs_50_50Random.txt')
+z$condition <- factor(z$condition, levels=c("FIFTY_FIFTY_RANDOM","FIFTY_FIFTY_BLOCKED","NEUTRAL","POSITIVE_NEGATION","POSITIVE"))
+writeresults(z,'C://Users/mob3f/Documents/MindTrials Future Thinking/results/Longitudinal Outcome/Treatment phase/ITT/4conditions_vs_50_50Random.txt','treatment')
 
 z$condition <- factor(z$condition, levels=c("POSITIVE","POSITIVE_NEGATION","NEUTRAL","FIFTY_FIFTY_RANDOM","FIFTY_FIFTY_BLOCKED"))
-writeresults(z,'C://Users/mob3f/Documents/MindTrials Future Thinking/results/Longitudinal Outcome/Treatment phase/ITT/4conditions_vs_Positive.txt')
+writeresults(z,'C://Users/mob3f/Documents/MindTrials Future Thinking/results/Longitudinal Outcome/Treatment phase/ITT/4conditions_vs_Positive.txt','treatment')
 
 z$condition <- factor(z$condition, levels=c("NEUTRAL","POSITIVE","POSITIVE_NEGATION","FIFTY_FIFTY_RANDOM","FIFTY_FIFTY_BLOCKED"))
-writeresults(z,'C://Users/mob3f/Documents/MindTrials Future Thinking/results/Longitudinal Outcome/Treatment phase/ITT/4conditions_vs_NEUTRAL.txt')
+writeresults(z,'C://Users/mob3f/Documents/MindTrials Future Thinking/results/Longitudinal Outcome/Treatment phase/ITT/4conditions_vs_NEUTRAL.txt','treatment')
 
 c <- subset(z, condition=="POSITIVE_NEGATION")
-writeresults2(c,'C://Users/mob3f/Documents/MindTrials Future Thinking/results/Longitudinal Outcome/Treatment phase/ITT/POSITIVE_NEGATION.txt')
+writeresults2(c,'C://Users/mob3f/Documents/MindTrials Future Thinking/results/Longitudinal Outcome/Treatment phase/ITT/POSITIVE_NEGATION.txt','treatment')
 
 c <- subset(z, condition=="POSITIVE")
-writeresults2(c,'C://Users/mob3f/Documents/MindTrials Future Thinking/results/Longitudinal Outcome/Treatment phase/ITT/POSITIVE_ACTIVE.txt')
+writeresults2(c,'C://Users/mob3f/Documents/MindTrials Future Thinking/results/Longitudinal Outcome/Treatment phase/ITT/POSITIVE_ACTIVE.txt','treatment')
 
 c <- subset(z, condition=="FIFTY_FIFTY_RANDOM")
-writeresults2(c,'C://Users/mob3f/Documents/MindTrials Future Thinking/results/Longitudinal Outcome/Treatment phase/ITT/FIFTY_FIFTY_RANDOM.txt')
+writeresults2(c,'C://Users/mob3f/Documents/MindTrials Future Thinking/results/Longitudinal Outcome/Treatment phase/ITT/FIFTY_FIFTY_RANDOM.txt','treatment')
 
 c <- subset(z, condition=="FIFTY_FIFTY_BLOCKED")
-writeresults2(c,'C://Users/mob3f/Documents/MindTrials Future Thinking/results/Longitudinal Outcome/Treatment phase/ITT/FIFTY_FIFTY_BLOCKED.txt')
+writeresults2(c,'C://Users/mob3f/Documents/MindTrials Future Thinking/results/Longitudinal Outcome/Treatment phase/ITT/FIFTY_FIFTY_BLOCKED.txt','treatment')
 
 # Follow-up phase
 y <- subset(ittx, session_int==4 |session_int==5)
 
 y$condition <- factor(y$condition, levels=c("FIFTY_FIFTY_RANDOM","FIFTY_FIFTY_BLOCKED","POSITIVE_NEGATION","POSITIVE","NEUTRAL"))
-writeresults(y,'C://Users/mob3f/Documents/MindTrials Future Thinking/results/Longitudinal Outcome/Follow-up phase/ITT/4conditions_vs_50_50Random.txt')
+writeresults(y,'C://Users/mob3f/Documents/MindTrials Future Thinking/results/Longitudinal Outcome/Follow-up phase/ITT/4conditions_vs_50_50Random.txt','follow-up')
 
 
 y$condition <- factor(y$condition, levels=c("POSITIVE","POSITIVE_NEGATION","NEUTRAL","FIFTY_FIFTY_RANDOM","FIFTY_FIFTY_BLOCKED"))
-writeresults(y,'C://Users/mob3f/Documents/MindTrials Future Thinking/results/Longitudinal Outcome/Follow-up phase/ITT/4conditions_vs_Positive.txt')
+writeresults(y,'C://Users/mob3f/Documents/MindTrials Future Thinking/results/Longitudinal Outcome/Follow-up phase/ITT/4conditions_vs_Positive.txt','follow-up')
 
 
 y$condition <- factor(y$condition, levels=c("NEUTRAL","POSITIVE","POSITIVE_NEGATION","FIFTY_FIFTY_RANDOM","FIFTY_FIFTY_BLOCKED"))
-writeresults(y,'C://Users/mob3f/Documents/MindTrials Future Thinking/results/Longitudinal Outcome/Follow-up phase/ITT/4conditions_vs_NEUTRAL.txt')
+writeresults(y,'C://Users/mob3f/Documents/MindTrials Future Thinking/results/Longitudinal Outcome/Follow-up phase/ITT/4conditions_vs_NEUTRAL.txt','follow-up')
 
 c <- subset(y, condition=="POSITIVE_NEGATION")
-writeresults2(c,'C://Users/mob3f/Documents/MindTrials Future Thinking/results/Longitudinal Outcome/Follow-up phase/ITT/POSITIVE_NEGATION.txt')
+writeresults2(c,'C://Users/mob3f/Documents/MindTrials Future Thinking/results/Longitudinal Outcome/Follow-up phase/ITT/POSITIVE_NEGATION.txt','follow-up')
 
 c <- subset(y, condition=="POSITIVE")
-writeresults2(c,'C://Users/mob3f/Documents/MindTrials Future Thinking/results/Longitudinal Outcome/Follow-up phase/ITT/POSITIVE_ACTIVE.txt')
+writeresults2(c,'C://Users/mob3f/Documents/MindTrials Future Thinking/results/Longitudinal Outcome/Follow-up phase/ITT/POSITIVE_ACTIVE.txt','follow-up')
 
 c <- subset(y, condition=="FIFTY_FIFTY_RANDOM")
-writeresults2(c,'C://Users/mob3f/Documents/MindTrials Future Thinking/results/Longitudinal Outcome/Follow-up phase/ITT/FIFTY_FIFTY_RANDOM.txt')
+writeresults2(c,'C://Users/mob3f/Documents/MindTrials Future Thinking/results/Longitudinal Outcome/Follow-up phase/ITT/FIFTY_FIFTY_RANDOM.txt','follow-up')
 
 c <- subset(y, condition=="FIFTY_FIFTY_BLOCKED")
-writeresults2(c,'C://Users/mob3f/Documents/MindTrials Future Thinking/results/Longitudinal Outcome/Follow-up phase/ITT/FIFTY_FIFTY_BLOCKED.txt')
+writeresults2(c,'C://Users/mob3f/Documents/MindTrials Future Thinking/results/Longitudinal Outcome/Follow-up phase/ITT/FIFTY_FIFTY_BLOCKED.txt','follow-up')
 
 #Completers
 compx<-impx[which(impx$participantId %in% completers$participantId), ]
@@ -333,43 +302,49 @@ compx<-impx[which(impx$participantId %in% completers$participantId), ]
 z <- subset(compx, session_int!=5)
 
 z$condition <- factor(z$condition, levels=c("FIFTY_FIFTY_RANDOM","FIFTY_FIFTY_BLOCKED","POSITIVE_NEGATION","POSITIVE","NEUTRAL"))
-writeresults(z,'C://Users/mob3f/Documents/MindTrials Future Thinking/results/Longitudinal Outcome/Treatment phase/Completers/4conditions_vs_50_50Random.txt')
+writeresults(z,'C://Users/mob3f/Documents/MindTrials Future Thinking/results/Longitudinal Outcome/Treatment phase/Completers/4conditions_vs_50_50Random.txt','treatment')
 
 z$condition <- factor(z$condition, levels=c("POSITIVE","POSITIVE_NEGATION","NEUTRAL","FIFTY_FIFTY_RANDOM","FIFTY_FIFTY_BLOCKED"))
-writeresults(z,'C://Users/mob3f/Documents/MindTrials Future Thinking/results/Longitudinal Outcome/Treatment phase/Completers/4conditions_vs_Positive.txt')
+writeresults(z,'C://Users/mob3f/Documents/MindTrials Future Thinking/results/Longitudinal Outcome/Treatment phase/Completers/4conditions_vs_Positive.txt','treatment')
+
+z$condition <- factor(z$condition, levels=c("NEUTRAL","POSITIVE","POSITIVE_NEGATION","FIFTY_FIFTY_RANDOM","FIFTY_FIFTY_BLOCKED"))
+writeresults(z,'C://Users/mob3f/Documents/MindTrials Future Thinking/results/Longitudinal Outcome/Treatment phase/Completers/4conditions_vs_NEUTRAL.txt','treatment')
 
 c <- subset(z, condition=="POSITIVE_NEGATION")
-writeresults2(c,'C://Users/mob3f/Documents/MindTrials Future Thinking/results/Longitudinal Outcome/Treatment phase/Completers/POSITIVE_NEGATION.txt')
+writeresults2(c,'C://Users/mob3f/Documents/MindTrials Future Thinking/results/Longitudinal Outcome/Treatment phase/Completers/POSITIVE_NEGATION.txt','treatment')
 
 c <- subset(z, condition=="POSITIVE")
-writeresults2(c,'C://Users/mob3f/Documents/MindTrials Future Thinking/results/Longitudinal Outcome/Treatment phase/Completers/POSITIVE_ACTIVE.txt')
+writeresults2(c,'C://Users/mob3f/Documents/MindTrials Future Thinking/results/Longitudinal Outcome/Treatment phase/Completers/POSITIVE_ACTIVE.txt','treatment')
 
 c <- subset(z, condition=="FIFTY_FIFTY_RANDOM")
-writeresults2(c,'C://Users/mob3f/Documents/MindTrials Future Thinking/results/Longitudinal Outcome/Treatment phase/Completers/FIFTY_FIFTY_RANDOM.txt')
+writeresults2(c,'C://Users/mob3f/Documents/MindTrials Future Thinking/results/Longitudinal Outcome/Treatment phase/Completers/FIFTY_FIFTY_RANDOM.txt','treatment')
 
 c <- subset(z, condition=="FIFTY_FIFTY_BLOCKED")
-writeresults2(c,'C://Users/mob3f/Documents/MindTrials Future Thinking/results/Longitudinal Outcome/Treatment phase/Completers/FIFTY_FIFTY_BLOCKED.txt')
+writeresults2(c,'C://Users/mob3f/Documents/MindTrials Future Thinking/results/Longitudinal Outcome/Treatment phase/Completers/FIFTY_FIFTY_BLOCKED.txt','treatment')
 
 # Follow-up phase
 y <- subset(compx, session_int==4 |session_int==5)
 
 y$condition <- factor(y$condition, levels=c("FIFTY_FIFTY_RANDOM","FIFTY_FIFTY_BLOCKED","POSITIVE_NEGATION","POSITIVE","NEUTRAL"))
-writeresults(y,'C://Users/mob3f/Documents/MindTrials Future Thinking/results/Longitudinal Outcome/Follow-up phase/Completers/4conditions_vs_50_50Random.txt')
+writeresults(y,'C://Users/mob3f/Documents/MindTrials Future Thinking/results/Longitudinal Outcome/Follow-up phase/Completers/4conditions_vs_50_50Random.txt','follow-up')
 
 y$condition <- factor(y$condition, levels=c("POSITIVE","POSITIVE_NEGATION","NEUTRAL","FIFTY_FIFTY_RANDOM","FIFTY_FIFTY_BLOCKED"))
-writeresults(y,'C://Users/mob3f/Documents/MindTrials Future Thinking/results/Longitudinal Outcome/Follow-up phase/Completers/4conditions_vs_Positive.txt')
+writeresults(y,'C://Users/mob3f/Documents/MindTrials Future Thinking/results/Longitudinal Outcome/Follow-up phase/Completers/4conditions_vs_Positive.txt','follow-up')
+
+y$condition <- factor(y$condition, levels=c("NEUTRAL","POSITIVE","POSITIVE_NEGATION","FIFTY_FIFTY_RANDOM","FIFTY_FIFTY_BLOCKED"))
+writeresults(y,'C://Users/mob3f/Documents/MindTrials Future Thinking/results/Longitudinal Outcome/Follow-up phase/Completers/4conditions_vs_NEUTRAL.txt','follow-up')
 
 c <- subset(y, condition=="POSITIVE_NEGATION")
-writeresults2(c,'C://Users/mob3f/Documents/MindTrials Future Thinking/results/Longitudinal Outcome/Follow-up phase/Completers/POSITIVE_NEGATION.txt')
+writeresults2(c,'C://Users/mob3f/Documents/MindTrials Future Thinking/results/Longitudinal Outcome/Follow-up phase/Completers/POSITIVE_NEGATION.txt','follow-up')
 
 c <- subset(y, condition=="POSITIVE")
-writeresults2(c,'C://Users/mob3f/Documents/MindTrials Future Thinking/results/Longitudinal Outcome/Follow-up phase/Completers/POSITIVE_ACTIVE.txt')
+writeresults2(c,'C://Users/mob3f/Documents/MindTrials Future Thinking/results/Longitudinal Outcome/Follow-up phase/Completers/POSITIVE_ACTIVE.txt','follow-up')
 
 c <- subset(y, condition=="FIFTY_FIFTY_RANDOM")
-writeresults2(c,'C://Users/mob3f/Documents/MindTrials Future Thinking/results/Longitudinal Outcome/Follow-up phase/Completers/FIFTY_FIFTY_RANDOM.txt')
+writeresults2(c,'C://Users/mob3f/Documents/MindTrials Future Thinking/results/Longitudinal Outcome/Follow-up phase/Completers/FIFTY_FIFTY_RANDOM.txt','follow-up')
 
 c <- subset(y, condition=="FIFTY_FIFTY_BLOCKED")
-writeresults2(c,'C://Users/mob3f/Documents/MindTrials Future Thinking/results/Longitudinal Outcome/Follow-up phase/Completers/FIFTY_FIFTY_BLOCKED.txt')
+writeresults2(c,'C://Users/mob3f/Documents/MindTrials Future Thinking/results/Longitudinal Outcome/Follow-up phase/Completers/FIFTY_FIFTY_BLOCKED.txt','follow-up')
 
 
 
