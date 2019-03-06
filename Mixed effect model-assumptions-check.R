@@ -14,12 +14,11 @@ library(r2glmm)
 writeresults <- function(imp,path,type,lev,ptype,hascondition){
   print(paste0("Current working dir: ",path))
   sink(file=path)
-  # lev<-c( "NEUTRAL","FIFTYFIFTY","POSITIVE")
-  # type<-'treatment'
-  # ptype<-Completers
-  # hascondition<-TRUE
-  # imp<-impList
-  ctrl<- lmeControl(opt='optim')
+  lev<-c( "NEUTRAL","FIFTYFIFTY","POSITIVE")
+  type<-'treatment'
+  ptype<-Completers
+  hascondition<-TRUE
+  imp<-impList2
   for(outcome in list("posExpBiasScale","negExpBiasScale","depressionScale", "anxietyScale","selfEffScale","growthMindScale","optimismScale")){
     x<-imp    
     for(i in 1:length(x))
@@ -28,13 +27,13 @@ writeresults <- function(imp,path,type,lev,ptype,hascondition){
           x[[i]] <- subset(x[[i]], participantId %in% ptype$participantId)
             #impx[which(impx$participantId %in% ITT$participantId), ]
           
-            if (type=='treatment'){
-              x[[i]] <- subset(x[[i]], session_int!=5)
-              if (outcome!="posExpBiasScale"& outcome!="negExpBiasScale"){x[[i]] <- subset(x[[i]], session_int!=1 & session_int!=3)}
-            }else{
-              x[[i]] <- subset(x[[i]], session_int==4 |session_int==5)
-              x[[i]]$session_int <- x[[i]]$session_int-4
-            }
+            # if (type=='treatment'){
+            #   x[[i]] <- subset(x[[i]], session_int!=5)
+            #   if (outcome!="posExpBiasScale"& outcome!="negExpBiasScale"){x[[i]] <- subset(x[[i]], session_int!=1 & session_int!=3)}
+            # }else{
+            #   x[[i]] <- subset(x[[i]], session_int==4 |session_int==5)
+            #   x[[i]]$session_int <- x[[i]]$session_int-4
+            # }
           
         }
     if(hascondition){fml=as.formula(paste(outcome, "~condition*session_int"))}else{fml=as.formula(paste(outcome, "~session_int"))}
@@ -42,8 +41,10 @@ writeresults <- function(imp,path,type,lev,ptype,hascondition){
      # if ((outcome=="selfEffScale"&lev==c("POSITIVE_NEGATION"))|(outcome=="growthMindScale"&lev==c("FIFTY_FIFTY_BLOCKED"))){
      #   print(testEstimates(with(x, lme(fml, random = ~1|participantId,control=ctrl, method="ML")), var.comp=TRUE))
      # }else{
-      print(testEstimates(with(x, lme(fml, random = ~1+session_int|participantId,control=ctrl, method="ML")), var.comp=TRUE))
+      m<-testEstimates(with(x, lme(fml, random = ~1+session_int|participantId,control=ctrl, method="ML")), var.comp=TRUE)
+      Plot.Model.F.Linearity<-plot(resid(m),outcome)
        # }
+      ctrl
       
       #unique(x[[100]]$session_int)
       print("----------------------------------------------------------------------------")
