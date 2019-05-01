@@ -94,9 +94,13 @@ md.pattern(x)
 p<-read.csv("C://Users/mob3f/Documents/MindTrials Future Thinking/Clean data from Jeremy/FTmainAnalysisSamples.csv")
 ITT<-subset(p, ittSample==1)
 Completers<-subset(p, txCompSample==1)
+x<-x[which(x$participantId %in% ITT$participantId), ]
+
+d<-read.csv("C://Users/mob3f/Documents/MindTrials Future Thinking/Clean data from Jeremy/FTmainDataDemogITT.csv")
+x<-merge(d[,-c(3,4)],x,by="participantId")
 
 #Multiple imputation  for multilevel data Using the pan package
-fml <- posExpBiasScale + negExpBiasScale + depressionScale + anxietyScale + selfEffScale + growthMindScale + optimismScale  ~ condition + session_int + condition*session_int + (1+session_int|participantId)
+fml <- posExpBiasScale + negExpBiasScale + depressionScale + anxietyScale + selfEffScale + growthMindScale + optimismScale + education + educationGrp  ~ condition + session_int + condition*session_int + (1+session_int|participantId)
 imp <- panImpute(x, formula=fml, n.burn=10000, n.iter=100, m=100, seed=1234)
 impList <- mitmlComplete(imp, print="all")
 #This si to summurize and plot the results of the imputation procedure
@@ -153,7 +157,9 @@ ITT<-subset(p, ittSample==1)
 Completers<-subset(p, txCompSample==1)
 ittx<-x[which(x$participantId %in% ITT$participantId), ]
 
-
+x<-x[which(x$participantId %in% ITT$participantId), ]
+d<-read.csv("C://Users/mob3f/Documents/MindTrials Future Thinking/Clean data from Jeremy/FTmainDataDemogITT.csv")
+x<-merge(d[,-c(3,4)],x,by="participantId")
 
 #Get a global view on our data
 summary(x)
@@ -162,7 +168,7 @@ md.pattern(x)
 
 
 #Multiple imputation  for multilevel data Using the pan package
-fml <- posExpBiasScale + negExpBiasScale + depressionScale + anxietyScale + selfEffScale + growthMindScale + optimismScale  ~ condition + session_int + condition*session_int + (1+session_int|participantId)
+fml <- posExpBiasScale + negExpBiasScale + depressionScale + anxietyScale + selfEffScale + growthMindScale + optimismScale + education + educationGrp  ~ condition + session_int + condition*session_int + (1+session_int|participantId)
 imp2 <- panImpute(x, formula=fml, n.burn=10000, n.iter=100, m=100, seed=1234)
 impList2 <- mitmlComplete(imp2, print="all")
 

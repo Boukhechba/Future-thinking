@@ -14,7 +14,14 @@ library(Hmisc)
 
 #Testing MCAR with demographics
 d<-read.csv("C://Users/mob3f/Documents/MindTrials Future Thinking/Clean data from Jeremy/FTmainDataDemogITT.csv")
-total<-merge(d,x,by="participantId")
+
+
+x <- read.csv("C://Users/mob3f/Documents/MindTrials Future Thinking/Clean data from Jeremy/FTmainDataScales.csv")
+p<-read.csv("C://Users/mob3f/Documents/MindTrials Future Thinking/Clean data from Jeremy/FTmainAnalysisSamples.csv")
+ITT<-subset(p, ittSample==1)
+Completers<-subset(p, txCompSample==1)
+ittx<-x[which(x$participantId %in% ITT$participantId), ]
+total<-merge(d,ittx,by="participantId")
 
 
 
@@ -31,17 +38,18 @@ total2<- aggregate(posind~participantId+age+genderId+race+ethnicity+maritalStat+
 
 sink(file="C:/Users/mob3f/Documents/MindTrials Future Thinking/results/testing_MCAR.txt")
 #age
-cor.test(total2$posind, total2$age, method = c("pearson"))
+cor.test(total2$posind, total2$age, method = c("spearman"))
+
 #other demographics 
-summary( aov(posind ~ genderId, data = total2))
-summary( aov(posind ~ race, data = total2))
-summary( aov(posind ~ maritalStat, data = total2))
-summary( aov(posind ~ education, data = total2))
-summary( aov(posind ~ educationGrp, data = total2))
-summary( aov(posind ~ employmentStat, data = total2))
-summary( aov(posind ~ employmentStatGrp, data = total2))
-summary( aov(posind ~ income, data = total2))
-summary( aov(posind ~ country, data = total2))
-summary( aov(posind ~ countryGrp, data = total2))
+kruskal.test (total2$posind,total2$genderId)
+kruskal.test (total2$posind,total2$race)
+kruskal.test (total2$posind,total2$maritalStat)
+kruskal.test (total2$posind,total2$education)
+kruskal.test (total2$posind,total2$educationGrp)
+kruskal.test (total2$posind,total2$employmentStat)
+kruskal.test (total2$posind,total2$employmentStatGrp)
+kruskal.test (total2$posind,total2$income)
+kruskal.test (total2$posind,total2$country)
+kruskal.test (total2$posind,total2$countryGrp)
 
 sink()
