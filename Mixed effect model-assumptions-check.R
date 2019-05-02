@@ -22,7 +22,8 @@ writeresults <- function(imp,path,type,lev,ptype,hascondition){
   # hascondition<-TRUE
   # imp<-impList
   for(outcome in list("posExpBiasScale","negExpBiasScale","depressionScale", "anxietyScale","selfEffScale","growthMindScale","optimismScale")){
-    x<-imp    
+    x<-imp
+    if(hascondition){dens<-c (rep(0,length(lev)-1))}else{dens<-c (rep(0,length(lev)))}
     for(i in 1:length(x))
         {
           if(hascondition){x[[i]]$condition <- factor(x[[i]]$condition, levels=lev)}else{x[[i]]<-subset(x[[i]], condition==lev[1])}
@@ -37,6 +38,21 @@ writeresults <- function(imp,path,type,lev,ptype,hascondition){
               x[[i]]$session_int <- x[[i]]$session_int-4
             }
           
+          #calculate SD on the baseline only
+          z <- subset(x[[i]], session_int==0)
+          if(hascondition){
+            for (i in 2:length(lev)){
+              temp<-subset(z,condition==lev[1]|condition==lev[i])
+              dens[i-1]<-dens[i-1]+apply(temp[outcome],2,sd)
+            }
+          }else{
+            for (i in 1:length(lev)){
+              temp<-z
+              dens[i]<-dens[i]+apply(temp[outcome],2,sd)
+            }
+            
+          }
+          
     }
     a=length(lev)
     b=nrow(impList[[2]])
@@ -50,20 +66,33 @@ writeresults <- function(imp,path,type,lev,ptype,hascondition){
       fml=as.formula(paste(outcome, "~session_int"))
       df=c(b-a-c,b-a-c)
     }
-    print(fml)  
-     if ((outcome=="selfEffScale"&lev==c("POSITIVE_NEGATION"))|(outcome=="growthMindScale"&lev==c("FIFTY_FIFTY_BLOCKED"))){
-       print(testEstimates(with(x, lme(fml, random = ~1|participantId,control=ctrl, method="ML")), var.comp=TRUE))
-     }else{
+    print(fml)
     
-      print(testEstimates(with(x, lme(fml, random = ~1+session_int|participantId,control=ctrl, method="ML")), var.comp=TRUE,df.com=df))
+    print("SD")
+    for(i in 1:length(dens)){
+      print(paste(outcome," ",lev[1],"-",lev[i+1],"=",dens[i]/100))
+    }
+    
+    print("Mixed effects")
+    
+     # if ((outcome=="selfEffScale"&lev==c("POSITIVE_NEGATION"))|(outcome=="growthMindScale"&lev==c("FIFTY_FIFTY_BLOCKED"))){
+     #   print(testEstimates(with(x, lme(fml, random = ~1|participantId,control=ctrl, method="ML")), var.comp=TRUE,df.com=df))
+     # }else{
+        
+    
+    print(testEstimates(with(x, lme(fml, random = ~1+session_int|participantId,control=ctrl, method="ML")), var.comp=TRUE,df.com=df))
       
-       }
+       # }
       
       #unique(x[[100]]$session_int)
       print("----------------------------------------------------------------------------")
   }
   sink()
 }
+
+  
+      
+
 preparedata<-function(x){
   #x <- subset(x, scenarioIndex==40 | is.na(x$scenarioIndex))
   #Remove the following participants
