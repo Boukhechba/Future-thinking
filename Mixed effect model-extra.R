@@ -1,4 +1,4 @@
-
+#Mean and SD per outcome
 ag <- aggregate(posExpBiasScale~session+condition,data=ittx,FUN=function(x) c(n = length(x),mean=mean(x),sd=sd(x)))
 write.csv(do.call(data.frame,reshape(ag, idvar = "session", timevar = "condition", direction = "wide")), file="C://Users/mob3f/Documents/MindTrials Future Thinking/results/Stats/posExpBiasScale.csv")
 
@@ -23,7 +23,7 @@ write.csv(do.call(data.frame,reshape(ag, idvar = "session", timevar = "condition
 
 
 
-##
+##Calculate the number of participants ar risk
 x$changepos<-x$posExpBiasScale-x$negExpBiasScale
 base<-x[which(x$session_int==1),]
 names(base)[names(base)=="changepos"] <- "changeposbase"
